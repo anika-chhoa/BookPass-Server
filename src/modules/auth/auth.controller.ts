@@ -2,8 +2,8 @@ import type { Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { success } from "../../utils/apiResponse";
-import { registerSchema, loginSchema } from "./auth.schema";
-import { registerUser, loginUser, refreshSession } from "./auth.service";
+import { registerSchema, loginSchema, googleLoginSchema } from "./auth.schema";
+import { registerUser, loginUser, refreshSession, loginWithGoogle } from "./auth.service";
 import { usersCollection } from "./auth.types";
 
 const REFRESH_COOKIE = "refreshToken";
@@ -21,6 +21,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const { accessToken, refreshToken, user } = await loginUser(email, password);
   res.cookie(REFRESH_COOKIE, refreshToken, cookieOpts);
   return success(res, { accessToken, user }, "Logged in");
+});
+
+export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
+  const { idToken } = googleLoginSchema.parse(req.body);
+  const { accessToken, refreshToken, user } = await loginWithGoogle(idToken);
+  res.cookie(REFRESH_COOKIE, refreshToken, cookieOpts);
+  return success(res, { accessToken, user }, "Logged in with Google");
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {

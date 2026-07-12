@@ -3,6 +3,11 @@ import { ObjectId } from "mongodb";
 import { usersCollection, type UserDoc } from "./auth.types";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../config/jwt";
 import { AppError } from "../../middlewares/errorHandler";
+import { randomUUID } from "crypto";
+import { OAuth2Client } from "google-auth-library";
+import { env } from "../../config/env";
+
+const googleClient = env.GOOGLE_CLIENT_ID ? new OAuth2Client(env.GOOGLE_CLIENT_ID) : null;
 
 const SALT_ROUNDS = 10;
 
@@ -24,6 +29,29 @@ export async function loginUser(email: string, password: string) {
   if (!user) throw new AppError("Invalid email or password", 401);
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) throw new AppError("Invalid email or password", 401);
+  return issueTokens(user);
+}
+
+export async function loginWithGoogle(idToken: string) {
+  if (!googleClient) throw new AppError("Google login is not configured", 500);
+  const ticket = await googleClient.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID });
+  const payload = ticket.getPayload();
+  if (!payload?.email) throw new AppError("Could not verify Google account", 401);
+
+  let user = await usersCollection().findOne({ email: payload.email });
+  if (!user) {
+    const randomPassword = await bcrypt.hash(randomUUID(), 10);
+    const doc: UserDoc = {
+      name: payload.name ?? payload.email.split("@")[0],
+      email: payload.email,
+      passwordHash: randomPassword,
+      role: "user",
+      plan: "free",
+      createdAt: new Date(),
+    };
+    const { insertedId } = await usersCollection().insertOne(doc);
+    user = { ...doc, _id: insertedId };
+  }
   return issueTokens(user);
 }
 
