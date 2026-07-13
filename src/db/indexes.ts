@@ -9,5 +9,9 @@ export async function ensureIndexes(): Promise<void> {
   await db
     .collection("favorites")
     .createIndex({ userId: 1, bookId: 1 }, { unique: true });
+  await db
+    .collection("reviews")
+    .createIndex({ bookId: 1, userId: 1 }, { unique: true });
+
   console.log("✅ Indexes ensured (users.email unique, books text+category)");
 }
