@@ -25,11 +25,9 @@ export async function listBooks(query: ListQuery) {
   if (query.category) filter.category = query.category;
   if (query.search) filter.$text = { $search: query.search };
 
-  const sortMap = {
+ const sortMap = {
     newest: { createdAt: -1 as const },
     rating: { rating: -1 as const },
-    priceAsc: { price: 1 as const },
-    priceDesc: { price: -1 as const },
   };
   const sort = sortMap[query.sort ?? "newest"];
   const skip = (query.page - 1) * query.limit;

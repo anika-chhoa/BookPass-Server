@@ -6,10 +6,8 @@ export interface BookDoc {
   title: string;
   writer: string;
   category: string;
-  shortDescription: string;
-  fullDescription: string;
+  description: string;
   coverUrl: string;
-  price: number;
   pages: number;
   publishedDate: string;
   rating: number;
