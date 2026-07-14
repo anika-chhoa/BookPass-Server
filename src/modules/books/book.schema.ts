@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createBookSchema = z.object({
   title: z.string().min(1).max(200),
-  writer: z.string().min(1).max(120),
+  writerId: z.string().min(1),
   category: z.string().min(1).max(60),
   description: z.string().min(1).max(5000),
   coverUrl: z.string().url(),

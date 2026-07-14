@@ -31,7 +31,6 @@ router.post(
   })
 );
 
-
 router.post(
   "/avatar",
   upload.single("image"),
@@ -39,6 +38,18 @@ router.post(
     if (!req.file) return failure(res, "No image file provided", 400);
     const result = await uploadToCloudinary(req.file.buffer, "BookPass/avatars");
     return success(res, { url: result.secure_url }, "Avatar uploaded");
+  })
+);
+
+router.post(
+  "/writer-photo",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("image"),
+  asyncHandler(async (req, res) => {
+    if (!req.file) return failure(res, "No image file provided", 400);
+    const result = await uploadToCloudinary(req.file.buffer, "BookPass/writers");
+    return success(res, { url: result.secure_url }, "Writer photo uploaded");
   })
 );
 

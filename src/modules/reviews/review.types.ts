@@ -6,6 +6,7 @@ export interface ReviewDoc {
   bookId: ObjectId;
   userId: ObjectId;
   userName: string;
+  userAvatarUrl: string;
   rating: number;
   comment: string;
   createdAt: Date;

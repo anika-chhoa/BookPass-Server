@@ -8,6 +8,8 @@ import reviewRouter from "../modules/reviews/review.routes";
 import subscriptionsRouter from "../modules/subscriptions/subscriptions.routes";
 import dashboardRouter from "../modules/dashboard/dashboard.routes";
 import adminRouter from "../modules/admin/admin.routes";
+import writerRouter from "../modules/writers/writer.routes";
+import statsRouter from "../modules/stats/stats.routes";
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use("/reviews", reviewRouter);
 router.use("/subscriptions", subscriptionsRouter);
 router.use("/dashboard", dashboardRouter);
 router.use("/admin", adminRouter);
+router.use("/writers", writerRouter);
+router.use("/stats", statsRouter);
 
 export default router;

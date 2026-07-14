@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { success } from "../../utils/apiResponse";
 import { createBookSchema, updateBookSchema, listBooksQuerySchema } from "./book.schema";
-import { createBook, listBooks, getBookById, updateBook, deleteBook, toPublicBook } from "./book.service";
+import { createBook, listBooks, getBookById, updateBook, deleteBook, toPublicBook, listCategories } from "./book.service";
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const input = createBookSchema.parse(req.body);
@@ -30,4 +30,8 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   await deleteBook(req.params.id);
   return success(res, null, "Book deleted");
+});
+
+export const getCategories = asyncHandler(async (_req: Request, res: Response) => {
+  return success(res, await listCategories());
 });

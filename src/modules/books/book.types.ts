@@ -4,7 +4,9 @@ import { collection } from "../../db/collections";
 export interface BookDoc {
   _id?: ObjectId;
   title: string;
-  writer: string;
+  writerId: ObjectId;
+  writerName: string;
+  writerPhotoUrl: string;
   category: string;
   description: string;
   coverUrl: string;
@@ -13,7 +15,6 @@ export interface BookDoc {
   rating: number;
   reviewCount: number;
   totalCopies: number;
-  availableCopies: number;
   createdAt: Date;
   updatedAt: Date;
 }
