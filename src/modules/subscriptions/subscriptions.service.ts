@@ -4,10 +4,9 @@ import { stripe } from "../../config/stripe";
 import { env } from "../../config/env";
 import { PLANS } from "../../config/plans";
 import { usersCollection } from "../auth/auth.types";
+import { paymentsCollection, type PaymentDoc } from "./payment.types";
 import { AppError } from "../../middlewares/errorHandler";
 
-// Reverse lookup used by the webhook: Stripe only tells us the price id
-// that was billed, so we need to map it back to our internal plan key.
 const PRICE_ID_TO_PLAN: Record<string, "pro" | "premium"> = {
   [PLANS.pro.stripePriceId!]: "pro",
   [PLANS.premium.stripePriceId!]: "premium",
@@ -24,8 +23,6 @@ export async function createCheckoutSession(userId: string, plan: "pro" | "premi
   const user = await usersCollection().findOne({ _id: new ObjectId(userId) });
   if (!user) throw new AppError("User not found", 404);
 
-  // Reuse one Stripe Customer per user across all future checkouts/plan
-  // changes — never create a new one on repeat checkout.
   let customerId = user.stripeCustomerId;
   if (!customerId) {
     const customer = await stripeClient.customers.create({
@@ -71,8 +68,6 @@ export async function handleStripeWebhook(rawBody: Buffer, signature: string) {
   }
 
   switch (event.type) {
-    // Fires once, right after successful checkout — sets the plan and
-    // records the subscription id for the first time.
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
@@ -81,16 +76,31 @@ export async function handleStripeWebhook(rawBody: Buffer, signature: string) {
         typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
       if (userId && plan && subscriptionId) {
-        await usersCollection().updateOne(
+        const user = await usersCollection().findOneAndUpdate(
           { _id: new ObjectId(userId) },
-          { $set: { plan, stripeSubscriptionId: subscriptionId } }
+          { $set: { plan, stripeSubscriptionId: subscriptionId } },
+          { returnDocument: "after" }
         );
+
+        if (user) {
+          const paymentDoc: PaymentDoc = {
+            userId: user._id!,
+            userName: user.name,
+            userEmail: user.email,
+            plan,
+            amountTotal: session.amount_total ?? 0,
+            currency: session.currency ?? "usd",
+            stripeSessionId: session.id,
+            stripeSubscriptionId: subscriptionId,
+            status: "paid",
+            createdAt: new Date(),
+          };
+          await paymentsCollection().insertOne(paymentDoc);
+        }
       }
       break;
     }
 
-    // Fires on renewals and plan changes — keeps plan in sync with
-    // whatever price the subscription is actually on.
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
       const priceId = subscription.items.data[0]?.price.id;
@@ -103,8 +113,6 @@ export async function handleStripeWebhook(rawBody: Buffer, signature: string) {
       break;
     }
 
-    // Fires when Stripe actually ends the subscription — with
-    // cancel_at_period_end, that's at period end, not on cancel-click.
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;

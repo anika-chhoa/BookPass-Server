@@ -7,6 +7,7 @@ import favoriteRouter from "../modules/favorites/favorite.routes";
 import reviewRouter from "../modules/reviews/review.routes";
 import subscriptionsRouter from "../modules/subscriptions/subscriptions.routes";
 import dashboardRouter from "../modules/dashboard/dashboard.routes";
+import adminRouter from "../modules/admin/admin.routes";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/favorites", favoriteRouter);
 router.use("/reviews", reviewRouter);
 router.use("/subscriptions", subscriptionsRouter);
 router.use("/dashboard", dashboardRouter);
+router.use("/admin", adminRouter);
 
 export default router;
