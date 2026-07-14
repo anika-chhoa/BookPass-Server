@@ -47,7 +47,7 @@ export async function createCheckoutSession(userId: string, plan: "pro" | "premi
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${env.CLIENT_URL}/account?checkout=success`,
+    success_url: `${env.CLIENT_URL}/checkout/success`,
     cancel_url: `${env.CLIENT_URL}/pricing?checkout=cancelled`,
     metadata: { userId: user._id!.toString(), plan },
     subscription_data: {

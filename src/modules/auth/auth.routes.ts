@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, refresh, logout, me, googleLogin } from "./auth.controller";
+import { register, login, refresh, logout, me, googleLogin, updateProfile } from "./auth.controller";
 import { authMiddleware } from "../../middlewares/authMiddleware";
 
 const router = Router();
@@ -9,4 +9,5 @@ router.post("/google", googleLogin);
 router.post("/refresh", refresh);
 router.post("/logout", logout);
 router.get("/me", authMiddleware, me);
+router.patch("/me", authMiddleware, updateProfile);
 export default router;

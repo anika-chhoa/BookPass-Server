@@ -66,6 +66,6 @@ export async function returnBooking(userId: string, bookingId: string) {
   if (booking.status === "returned") throw new AppError("This book has already been returned", 400);
 
   await bookingsCollection().updateOne({ _id: booking._id }, { $set: { returnedAt: new Date(), status: "returned" } });
-  await booksCollection().updateOne({ _id: booking.bookId }, { $inc: { availableCopies: 1 } });
+  await booksCollection().updateOne({ _id: booking.bookId }, { $inc: { totalCopies: 1 } });
   return { success: true };
 }

@@ -2,16 +2,16 @@ import type { Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { success } from "../../utils/apiResponse";
-import { registerSchema, loginSchema, googleLoginSchema } from "./auth.schema";
-import { registerUser, loginUser, refreshSession, loginWithGoogle } from "./auth.service";
+import { registerSchema, loginSchema, googleLoginSchema, updateProfileSchema } from "./auth.schema";
+import { registerUser, loginUser, refreshSession, loginWithGoogle, updateUserProfile, toPublicUser } from "./auth.service";
 import { usersCollection } from "./auth.types";
 
 const REFRESH_COOKIE = "refreshToken";
 const cookieOpts = { httpOnly: true, sameSite: "lax" as const, secure: process.env.NODE_ENV === "production" };
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password } = registerSchema.parse(req.body);
-  const { accessToken, refreshToken, user } = await registerUser(name, email, password);
+  const { name, email, password, avatarUrl } = registerSchema.parse(req.body);
+  const { accessToken, refreshToken, user } = await registerUser(name, email, password, avatarUrl);
   res.cookie(REFRESH_COOKIE, refreshToken, cookieOpts);
   return success(res, { accessToken, user }, "Account created", 201);
 });
@@ -44,8 +44,13 @@ export const logout = asyncHandler(async (_req: Request, res: Response) => {
 });
 
 export const me = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.userId;
-  const user = await usersCollection().findOne({ _id: new ObjectId(userId) });
+  const user = await usersCollection().findOne({ _id: new ObjectId(req.user!.userId) });
   if (!user) return success(res, null, "Not found", 404);
-  return success(res, { id: user._id!.toString(), name: user.name, email: user.email, role: user.role, plan: user.plan });
+  return success(res, toPublicUser(user));
+});
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
+  const updates = updateProfileSchema.parse(req.body);
+  const user = await updateUserProfile(req.user!.userId, updates);
+  return success(res, user, "Profile updated");
 });

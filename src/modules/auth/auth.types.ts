@@ -8,6 +8,7 @@ export interface UserDoc {
   passwordHash: string;
   role: "user" | "admin";
   plan: "free" | "pro" | "premium";
+  avatarUrl?: string;
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   createdAt: Date;

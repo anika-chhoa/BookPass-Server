@@ -9,15 +9,32 @@ import { env } from "../../config/env";
 
 const googleClient = env.GOOGLE_CLIENT_ID ? new OAuth2Client(env.GOOGLE_CLIENT_ID) : null;
 
-function toPublicUser(user: UserDoc) {
-  return { id: user._id!.toString(), name: user.name, email: user.email, role: user.role, plan: user.plan };
+export const DEFAULT_AVATAR_URL = "https://placehold.co/200x200/204e2b/ffffff?text=User";
+
+export function toPublicUser(user: UserDoc) {
+  return {
+    id: user._id!.toString(),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    plan: user.plan,
+    avatarUrl: user.avatarUrl ?? DEFAULT_AVATAR_URL,
+  };
 }
 
-export async function registerUser(name: string, email: string, password: string) {
+export async function registerUser(name: string, email: string, password: string, avatarUrl?: string) {
   const existing = await usersCollection().findOne({ email });
   if (existing) throw new AppError("An account with this email already exists", 409);
   const passwordHash = await bcrypt.hash(password, 10);
-  const doc: UserDoc = { name, email, passwordHash, role: "user", plan: "free", createdAt: new Date() };
+  const doc: UserDoc = {
+    name,
+    email,
+    passwordHash,
+    role: "user",
+    plan: "free",
+    avatarUrl: avatarUrl || DEFAULT_AVATAR_URL,
+    createdAt: new Date(),
+  };
   const { insertedId } = await usersCollection().insertOne(doc);
   return issueTokens({ ...doc, _id: insertedId });
 }
@@ -52,12 +69,27 @@ export async function loginWithGoogle(idToken: string) {
       passwordHash: randomPassword,
       role: "user",
       plan: "free",
+      avatarUrl: payload.picture ?? DEFAULT_AVATAR_URL,
       createdAt: new Date(),
     };
     const { insertedId } = await usersCollection().insertOne(doc);
     user = { ...doc, _id: insertedId };
   }
   return issueTokens(user);
+}
+
+export async function updateUserProfile(userId: string, updates: { name?: string; avatarUrl?: string }) {
+  const setFields: Partial<UserDoc> = {};
+  if (updates.name !== undefined) setFields.name = updates.name;
+  if (updates.avatarUrl !== undefined) setFields.avatarUrl = updates.avatarUrl;
+
+  const result = await usersCollection().findOneAndUpdate(
+    { _id: new ObjectId(userId) },
+    { $set: setFields },
+    { returnDocument: "after" }
+  );
+  if (!result) throw new AppError("User not found", 404);
+  return toPublicUser(result);
 }
 
 function issueTokens(user: UserDoc) {
