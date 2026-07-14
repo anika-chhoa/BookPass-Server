@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env";
 import routes from "./routes/index";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler";
+import { webhook } from "./modules/subscriptions/subscriptions.controller";
 
 export function createApp() {
   const app = express();
@@ -14,6 +15,9 @@ export function createApp() {
       credentials: true,
     })
   );
+
+  app.post("/api/subscriptions/webhook", express.raw({ type: "application/json" }), webhook);
+
   app.use(express.json());
   app.use(cookieParser());
 
