@@ -21,7 +21,7 @@ export async function addFavorite(userId: string, bookId: string) {
     bookId: new ObjectId(bookId),
     bookTitle: book.title,
     bookCoverUrl: book.coverUrl,
-    bookWriter: book.writer,
+    bookWriter: book.writerName,
     createdAt: new Date(),
   };
   const { insertedId } = await favoritesCollection().insertOne(doc);

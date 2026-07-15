@@ -25,6 +25,6 @@ export const getPayments = asyncHandler(async (req: Request, res: Response) => {
   return success(res, await listAllPayments(page, limit));
 });
 
-export const getStats = asyncHandler(async (req: Request, res: Response) => {
+export const getStats = asyncHandler(async (_req: Request, res: Response) => {
   return success(res, await getAdminStats());
 });

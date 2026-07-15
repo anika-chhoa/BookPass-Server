@@ -11,7 +11,7 @@ async function bootstrap() {
 
   const app = createApp();
   const server = app.listen(env.PORT, () => {
-    console.log(`🚀 Libro API listening on http://localhost:${env.PORT}`);
+    console.log(`🚀 OpenShelf listening on http://localhost:${env.PORT}`);
   });
 
   const shutdown = async () => {
