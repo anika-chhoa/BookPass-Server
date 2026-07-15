@@ -3,14 +3,12 @@ import { connectDB } from "../src/config/db";
 
 const app = createApp();
 
-let dbReady: Promise<void> | null = null;
+let dbReady: Promise<unknown> | null = null;
 
-app.use(async (_req, _res, next) => {
+export default async function handler(req: any, res: any) {
   if (!dbReady) {
-    dbReady = connectDB().then(() => {});
+    dbReady = connectDB();
   }
   await dbReady;
-  next();
-});
-
-export default app;
+  return app(req, res);
+}
