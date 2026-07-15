@@ -8,8 +8,10 @@ export interface BookDoc {
   writerName: string;
   writerPhotoUrl: string;
   category: string;
+  shortDescription: string;
   description: string;
   coverUrl: string;
+  images: string[];
   pages: number;
   publishedDate: string;
   rating: number;

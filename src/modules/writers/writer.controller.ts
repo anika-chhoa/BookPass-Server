@@ -10,6 +10,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
   return success(res, writer, "Writer created", 201);
 });
 
-export const list = asyncHandler(async (_req: Request, res: Response) => {
-  return success(res, await listWriters());
+export const list = asyncHandler(async (req: Request, res: Response) => {
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  return success(res, await listWriters(limit));
 });

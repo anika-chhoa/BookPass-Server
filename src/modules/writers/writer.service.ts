@@ -12,9 +12,10 @@ export async function createWriter(name: string, photoUrl: string) {
   return toPublicWriter({ ...doc, _id: insertedId });
 }
 
-export async function listWriters() {
-  const writers = await writersCollection().find({}).sort({ name: 1 }).toArray();
-  return writers.map(toPublicWriter);
+export async function listWriters(limit?: number) {
+  let query = writersCollection().find({}).sort({ createdAt: -1 });
+  if (limit) query = query.limit(limit);
+  return (await query.toArray()).map(toPublicWriter);
 }
 
 export async function getWriterById(id: string) {

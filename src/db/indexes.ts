@@ -3,7 +3,7 @@ import { getDb } from "../config/db";
 export async function ensureIndexes(): Promise<void> {
   const db = getDb();
   await db.collection("users").createIndex({ email: 1 }, { unique: true });
-  await db.collection("books").createIndex({ title: "text", writer: "text" });
+ await db.collection("books").createIndex({ title: "text", writerName: "text" });
   await db.collection("books").createIndex({ category: 1 });
   await db.collection("bookings").createIndex({ userId: 1, bookedAt: -1 });
   await db.collection("payments").createIndex({ userId: 1, createdAt: -1 });

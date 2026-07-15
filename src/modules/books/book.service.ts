@@ -40,10 +40,12 @@ export async function listBooks(query: ListQuery) {
   const filter: Record<string, unknown> = {};
   if (query.category) filter.category = query.category;
   if (query.search) filter.$text = { $search: query.search };
+  if (query.minRating !== undefined) filter.rating = { $gte: query.minRating };
 
   const sortMap = {
     newest: { createdAt: -1 as const },
     rating: { rating: -1 as const },
+    mostReviewed: { reviewCount: -1 as const },
   };
   const sort = sortMap[query.sort ?? "newest"];
   const skip = (query.page - 1) * query.limit;
